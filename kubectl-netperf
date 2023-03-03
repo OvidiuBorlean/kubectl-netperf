@@ -1,0 +1,37 @@
+#!/bin/bash
+# optional argument handling
+if [[ "$1" == "start" ]]
+then
+    #Getting the IP Address of the server Pod
+    serverIP=$(kubectl get pod $2 -o jsonpath={.status.podIP})
+    containerImage=$(kubectl get pod server -o jsonpath={.spec.containers[*].image})
+    image="cilium/netperf"
+    if [[ "$containerImage" != "$image" ]];
+    then
+       echo "No Netperf image found on Pod spec. Please make sure the netperf utility is installed";
+    fi
+    echo "Checking Netperf Server"
+    #kubectl exec $2 -- sockperf sr --tcp -i $serverIP -p $4 &
+    echo "Checking Netperf client"
+    echo $netperf_config
+    kubectl exec -it $3 -- netperf -t TCP_RR -H $serverIP -- -r40000:80000 -O MIN_LATENCY,P90_LATENCY,P99_LATENCY,THROUGHPUT
+    echo "Done"
+
+fi
+
+if [[ "$1" == "version" ]]
+then
+    echo "1.0.2"
+    exit 0
+fi
+
+# optional argument handling
+if [[ "$1" == "config" ]]
+then
+    echo "-t TCP_RR -H $serverIP -- -r40000:80000 -O MIN_LATENCY,P90_LATENCY,P99_LATENCY,THROUGHPUT"
+    echo "Netperf Manual: http://www.cs.kent.edu/~farrell/dist/ref/Netperf.html#:~:text=The%20most%20common%20use%20of,other%20system%20can%20receive%20it."
+    exit 0
+fi
+
+echo "kubectl-netperf Plugin v0.20230303"
+echo "Usage: kubectl-netperf start <pod server> <pod client>"

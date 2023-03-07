@@ -4,7 +4,7 @@ if [[ "$1" == "start" ]]
 then
     #Getting the IP Address of the server Pod
     serverIP=$(kubectl get pod $2 -o jsonpath={.status.podIP})
-    containerImage=$(kubectl get pod server -o jsonpath={.spec.containers[*].image})
+    containerImage=$(kubectl get pod $2 -o jsonpath={.spec.containers[*].image})
     image="cilium/netperf"
     if [[ "$containerImage" != "$image" ]];
     then
